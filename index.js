@@ -1,7 +1,5 @@
 // Based on eslint/sort-imports
 
-// TODO make imports without variables sort by from
-
 module.exports = {
   rules: {
     "sort-imports": {
