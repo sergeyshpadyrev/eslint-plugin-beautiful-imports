@@ -28,14 +28,6 @@ module.exports = {
                 minItems: 4,
                 maxItems: 4,
               },
-              ignoreDeclarationSort: {
-                type: "boolean",
-                default: false,
-              },
-              ignoreMemberSort: {
-                type: "boolean",
-                default: false,
-              },
               allowSeparatedGroups: {
                 type: "boolean",
                 default: false,
@@ -58,8 +50,6 @@ module.exports = {
 
       create(context) {
         const configuration = context.options[0] || {},
-          ignoreDeclarationSort = configuration.ignoreDeclarationSort || false,
-          ignoreMemberSort = configuration.ignoreMemberSort || false,
           memberSyntaxSortOrder = configuration.memberSyntaxSortOrder || [
             "none",
             "all",
@@ -129,145 +119,138 @@ module.exports = {
 
         return {
           ImportDeclaration(node) {
-            if (!ignoreDeclarationSort) {
-              if (
-                previousDeclaration &&
-                allowSeparatedGroups &&
-                getNumberOfLinesBetween(previousDeclaration, node) > 0
-              ) {
-                // reset declaration sort
-                previousDeclaration = null;
-              }
-
-              if (previousDeclaration) {
-                const currentMemberSyntaxGroupIndex = getMemberParameterGroupIndex(
-                    node
-                  ),
-                  previousMemberSyntaxGroupIndex = getMemberParameterGroupIndex(
-                    previousDeclaration
-                  );
-                let currentLocalMemberName = getFirstLocalMemberName(node),
-                  previousLocalMemberName = getFirstLocalMemberName(
-                    previousDeclaration
-                  );
-
-                previousLocalMemberName =
-                  previousLocalMemberName &&
-                  previousLocalMemberName.toLowerCase();
-                currentLocalMemberName =
-                  currentLocalMemberName &&
-                  currentLocalMemberName.toLowerCase();
-
-                /*
-                 * When the current declaration uses a different member syntax,
-                 * then check if the ordering is correct.
-                 * Otherwise, make a default string compare (like rule sort-vars to be consistent) of the first used local member name.
-                 */
-                if (
-                  currentMemberSyntaxGroupIndex !==
-                  previousMemberSyntaxGroupIndex
-                ) {
-                  if (
-                    currentMemberSyntaxGroupIndex <
-                    previousMemberSyntaxGroupIndex
-                  ) {
-                    context.report({
-                      node,
-                      messageId: "unexpectedSyntaxOrder",
-                      data: {
-                        syntaxA:
-                          memberSyntaxSortOrder[currentMemberSyntaxGroupIndex],
-                        syntaxB:
-                          memberSyntaxSortOrder[previousMemberSyntaxGroupIndex],
-                      },
-                    });
-                  }
-                } else {
-                  if (
-                    previousLocalMemberName &&
-                    currentLocalMemberName &&
-                    currentLocalMemberName < previousLocalMemberName
-                  ) {
-                    context.report({
-                      node,
-                      messageId: "sortImportsAlphabetically",
-                    });
-                  }
-                }
-              }
-
-              previousDeclaration = node;
+            if (
+              previousDeclaration &&
+              allowSeparatedGroups &&
+              getNumberOfLinesBetween(previousDeclaration, node) > 0
+            ) {
+              // reset declaration sort
+              previousDeclaration = null;
             }
 
-            if (!ignoreMemberSort) {
-              const importSpecifiers = node.specifiers.filter(
-                (specifier) => specifier.type === "ImportSpecifier"
-              );
-              const getSortableName = (specifier) =>
-                specifier.local.name.toLowerCase();
-              const firstUnsortedIndex = importSpecifiers
-                .map(getSortableName)
-                .findIndex((name, index, array) => array[index - 1] > name);
+            if (previousDeclaration) {
+              const currentMemberSyntaxGroupIndex = getMemberParameterGroupIndex(
+                  node
+                ),
+                previousMemberSyntaxGroupIndex = getMemberParameterGroupIndex(
+                  previousDeclaration
+                );
+              let currentLocalMemberName = getFirstLocalMemberName(node),
+                previousLocalMemberName = getFirstLocalMemberName(
+                  previousDeclaration
+                );
 
-              if (firstUnsortedIndex !== -1) {
-                context.report({
-                  node: importSpecifiers[firstUnsortedIndex],
-                  messageId: "sortMembersAlphabetically",
-                  data: {
-                    memberName: importSpecifiers[firstUnsortedIndex].local.name,
-                  },
-                  fix(fixer) {
-                    if (
-                      importSpecifiers.some(
-                        (specifier) =>
-                          sourceCode.getCommentsBefore(specifier).length ||
-                          sourceCode.getCommentsAfter(specifier).length
-                      )
-                    ) {
-                      // If there are comments in the ImportSpecifier list, don't rearrange the specifiers.
-                      return null;
-                    }
+              previousLocalMemberName =
+                previousLocalMemberName &&
+                previousLocalMemberName.toLowerCase();
+              currentLocalMemberName =
+                currentLocalMemberName && currentLocalMemberName.toLowerCase();
 
-                    return fixer.replaceTextRange(
-                      [
-                        importSpecifiers[0].range[0],
-                        importSpecifiers[importSpecifiers.length - 1].range[1],
-                      ],
-                      importSpecifiers
-
-                        // Clone the importSpecifiers array to avoid mutating it
-                        .slice()
-
-                        // Sort the array into the desired order
-                        .sort((specifierA, specifierB) => {
-                          const aName = getSortableName(specifierA);
-                          const bName = getSortableName(specifierB);
-
-                          return aName > bName ? 1 : -1;
-                        })
-
-                        // Build a string out of the sorted list of import specifiers and the text between the originals
-                        .reduce((sourceText, specifier, index) => {
-                          const textAfterSpecifier =
-                            index === importSpecifiers.length - 1
-                              ? ""
-                              : sourceCode
-                                  .getText()
-                                  .slice(
-                                    importSpecifiers[index].range[1],
-                                    importSpecifiers[index + 1].range[0]
-                                  );
-
-                          return (
-                            sourceText +
-                            sourceCode.getText(specifier) +
-                            textAfterSpecifier
-                          );
-                        }, "")
-                    );
-                  },
-                });
+              /*
+               * When the current declaration uses a different member syntax,
+               * then check if the ordering is correct.
+               * Otherwise, make a default string compare (like rule sort-vars to be consistent) of the first used local member name.
+               */
+              if (
+                currentMemberSyntaxGroupIndex !== previousMemberSyntaxGroupIndex
+              ) {
+                if (
+                  currentMemberSyntaxGroupIndex < previousMemberSyntaxGroupIndex
+                ) {
+                  context.report({
+                    node,
+                    messageId: "unexpectedSyntaxOrder",
+                    data: {
+                      syntaxA:
+                        memberSyntaxSortOrder[currentMemberSyntaxGroupIndex],
+                      syntaxB:
+                        memberSyntaxSortOrder[previousMemberSyntaxGroupIndex],
+                    },
+                  });
+                }
+              } else {
+                if (
+                  previousLocalMemberName &&
+                  currentLocalMemberName &&
+                  currentLocalMemberName < previousLocalMemberName
+                ) {
+                  context.report({
+                    node,
+                    messageId: "sortImportsAlphabetically",
+                  });
+                }
               }
+            }
+
+            previousDeclaration = node;
+
+            const importSpecifiers = node.specifiers.filter(
+              (specifier) => specifier.type === "ImportSpecifier"
+            );
+            const getSortableName = (specifier) =>
+              specifier.local.name.toLowerCase();
+            const firstUnsortedIndex = importSpecifiers
+              .map(getSortableName)
+              .findIndex((name, index, array) => array[index - 1] > name);
+
+            if (firstUnsortedIndex !== -1) {
+              context.report({
+                node: importSpecifiers[firstUnsortedIndex],
+                messageId: "sortMembersAlphabetically",
+                data: {
+                  memberName: importSpecifiers[firstUnsortedIndex].local.name,
+                },
+                fix(fixer) {
+                  if (
+                    importSpecifiers.some(
+                      (specifier) =>
+                        sourceCode.getCommentsBefore(specifier).length ||
+                        sourceCode.getCommentsAfter(specifier).length
+                    )
+                  ) {
+                    // If there are comments in the ImportSpecifier list, don't rearrange the specifiers.
+                    return null;
+                  }
+
+                  return fixer.replaceTextRange(
+                    [
+                      importSpecifiers[0].range[0],
+                      importSpecifiers[importSpecifiers.length - 1].range[1],
+                    ],
+                    importSpecifiers
+
+                      // Clone the importSpecifiers array to avoid mutating it
+                      .slice()
+
+                      // Sort the array into the desired order
+                      .sort((specifierA, specifierB) => {
+                        const aName = getSortableName(specifierA);
+                        const bName = getSortableName(specifierB);
+
+                        return aName > bName ? 1 : -1;
+                      })
+
+                      // Build a string out of the sorted list of import specifiers and the text between the originals
+                      .reduce((sourceText, specifier, index) => {
+                        const textAfterSpecifier =
+                          index === importSpecifiers.length - 1
+                            ? ""
+                            : sourceCode
+                                .getText()
+                                .slice(
+                                  importSpecifiers[index].range[1],
+                                  importSpecifiers[index + 1].range[0]
+                                );
+
+                        return (
+                          sourceText +
+                          sourceCode.getText(specifier) +
+                          textAfterSpecifier
+                        );
+                      }, "")
+                  );
+                },
+              });
             }
           },
         };
