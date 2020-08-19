@@ -19,10 +19,6 @@ module.exports = {
           {
             type: "object",
             properties: {
-              ignoreCase: {
-                type: "boolean",
-                default: false,
-              },
               memberSyntaxSortOrder: {
                 type: "array",
                 items: {
@@ -62,7 +58,6 @@ module.exports = {
 
       create(context) {
         const configuration = context.options[0] || {},
-          ignoreCase = configuration.ignoreCase || false,
           ignoreDeclarationSort = configuration.ignoreDeclarationSort || false,
           ignoreMemberSort = configuration.ignoreMemberSort || false,
           memberSyntaxSortOrder = configuration.memberSyntaxSortOrder || [
@@ -156,14 +151,12 @@ module.exports = {
                     previousDeclaration
                   );
 
-                if (ignoreCase) {
-                  previousLocalMemberName =
-                    previousLocalMemberName &&
-                    previousLocalMemberName.toLowerCase();
-                  currentLocalMemberName =
-                    currentLocalMemberName &&
-                    currentLocalMemberName.toLowerCase();
-                }
+                previousLocalMemberName =
+                  previousLocalMemberName &&
+                  previousLocalMemberName.toLowerCase();
+                currentLocalMemberName =
+                  currentLocalMemberName &&
+                  currentLocalMemberName.toLowerCase();
 
                 /*
                  * When the current declaration uses a different member syntax,
@@ -210,9 +203,8 @@ module.exports = {
               const importSpecifiers = node.specifiers.filter(
                 (specifier) => specifier.type === "ImportSpecifier"
               );
-              const getSortableName = ignoreCase
-                ? (specifier) => specifier.local.name.toLowerCase()
-                : (specifier) => specifier.local.name;
+              const getSortableName = (specifier) =>
+                specifier.local.name.toLowerCase();
               const firstUnsortedIndex = importSpecifiers
                 .map(getSortableName)
                 .findIndex((name, index, array) => array[index - 1] > name);
