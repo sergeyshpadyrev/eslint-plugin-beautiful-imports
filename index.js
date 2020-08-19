@@ -33,7 +33,7 @@ module.exports = {
           sortMembersAlphabetically:
             "Member '{{memberName}}' of the import declaration should be sorted alphabetically.",
           unexpectedSyntaxOrder:
-            "Expected imports without variables to be on the top.",
+            "Expected order: imports without variables, '*' imports, regular imports",
         },
       },
 
@@ -49,7 +49,9 @@ module.exports = {
          * @returns {number} the declaration group by member index.
          */
         function getMemberParameterGroupIndex(node) {
-          return node.specifiers.length === 0 ? 0 : 1;
+          if (node.specifiers.length === 0) return 0;
+          if (node.specifiers[0].type === "ImportNamespaceSpecifier") return 1;
+          return 2;
         }
 
         /**
@@ -58,10 +60,10 @@ module.exports = {
          * @returns {?string} the local name of the first imported module.
          */
         function getFirstLocalMemberName(node) {
-          if (node.specifiers[0]) {
-            return node.specifiers[0].local.name;
-          }
-          return null;
+          const specifier = node.specifiers[0];
+          if (!specifier) return null;
+          if (!!specifier.imported) return specifier.imported.name;
+          return specifier.local.name;
         }
 
         /**

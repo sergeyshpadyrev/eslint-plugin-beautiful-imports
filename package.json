@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-beautiful-imports",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Rule sorts imports alphabetically in beatiful way",
   "main": "index.js",
   "repository": "https://github.com/sergeyshpadyrev/eslint-plugin-beautiful-imports",
