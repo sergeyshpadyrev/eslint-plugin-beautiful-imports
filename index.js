@@ -19,15 +19,6 @@ module.exports = {
           {
             type: "object",
             properties: {
-              memberSyntaxSortOrder: {
-                type: "array",
-                items: {
-                  enum: ["none", "all", "multiple", "single"],
-                },
-                uniqueItems: true,
-                minItems: 4,
-                maxItems: 4,
-              },
               allowSeparatedGroups: {
                 type: "boolean",
                 default: false,
@@ -44,44 +35,15 @@ module.exports = {
           sortMembersAlphabetically:
             "Member '{{memberName}}' of the import declaration should be sorted alphabetically.",
           unexpectedSyntaxOrder:
-            "Expected '{{syntaxA}}' syntax before '{{syntaxB}}' syntax.",
+            "Expected imports without variables to be on the top.",
         },
       },
 
       create(context) {
         const configuration = context.options[0] || {},
-          memberSyntaxSortOrder = configuration.memberSyntaxSortOrder || [
-            "none",
-            "all",
-            "multiple",
-            "single",
-          ],
           allowSeparatedGroups = configuration.allowSeparatedGroups || false,
           sourceCode = context.getSourceCode();
         let previousDeclaration = null;
-
-        /**
-         * Gets the used member syntax style.
-         *
-         * import "my-module.js" --> none
-         * import * as myModule from "my-module.js" --> all
-         * import {myMember} from "my-module.js" --> single
-         * import {foo, bar} from  "my-module.js" --> multiple
-         * @param {ASTNode} node the ImportDeclaration node.
-         * @returns {string} used member parameter style, ["all", "multiple", "single"]
-         */
-        function usedMemberSyntax(node) {
-          if (node.specifiers.length === 0) {
-            return "none";
-          }
-          if (node.specifiers[0].type === "ImportNamespaceSpecifier") {
-            return "all";
-          }
-          if (node.specifiers.length === 1) {
-            return "single";
-          }
-          return "multiple";
-        }
 
         /**
          * Gets the group by member parameter index for given declaration.
@@ -89,7 +51,7 @@ module.exports = {
          * @returns {number} the declaration group by member index.
          */
         function getMemberParameterGroupIndex(node) {
-          return memberSyntaxSortOrder.indexOf(usedMemberSyntax(node));
+          return node.specifiers.length === 0 ? 0 : 1;
         }
 
         /**
@@ -160,12 +122,6 @@ module.exports = {
                   context.report({
                     node,
                     messageId: "unexpectedSyntaxOrder",
-                    data: {
-                      syntaxA:
-                        memberSyntaxSortOrder[currentMemberSyntaxGroupIndex],
-                      syntaxB:
-                        memberSyntaxSortOrder[previousMemberSyntaxGroupIndex],
-                    },
                   });
                 }
               } else {
