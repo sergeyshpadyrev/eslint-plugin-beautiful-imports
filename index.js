@@ -1,6 +1,6 @@
-// Fork of eslint/sort-imports
+// Based on eslint/sort-imports
 
-// TODO remove all properties
+// TODO make imports without variables sort by from
 
 module.exports = {
   rules: {
@@ -129,6 +129,18 @@ module.exports = {
                   previousLocalMemberName &&
                   currentLocalMemberName &&
                   currentLocalMemberName < previousLocalMemberName
+                ) {
+                  context.report({
+                    node,
+                    messageId: "sortImportsAlphabetically",
+                  });
+                }
+
+                if (
+                  node.specifiers.length === 0 &&
+                  previousDeclaration.specifiers.length === 0 &&
+                  node.source.value.toLowerCase() <
+                    previousDeclaration.source.value.toLowerCase()
                 ) {
                   context.report({
                     node,
