@@ -1,9 +1,21 @@
 {
-  "name": "eslint-plugin-beautiful-imports",
-  "version": "0.0.2",
-  "description": "Rule sorts imports alphabetically in beatiful way",
-  "main": "index.js",
-  "repository": "https://github.com/sergeyshpadyrev/eslint-plugin-beautiful-imports",
-  "author": "Sergey Shpadyrev <sergeyshpadyrev@gmail.com>",
-  "license": "MIT"
+    "name": "eslint-plugin-beautiful-imports",
+    "version": "0.0.2",
+    "description": "Rule sorts imports alphabetically in beatiful way",
+    "main": "index.js",
+    "repository": "https://github.com/sergeyshpadyrev/eslint-plugin-beautiful-imports",
+    "author": "Sergey Shpadyrev <sergeyshpadyrev@gmail.com>",
+    "keywords": [
+        "eslint",
+        "eslintplugin"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "babel-eslint": "^10.1.0",
+        "eslint": "7.7.0",
+        "jest": "26.4.1"
+    },
+    "scripts": {
+        "test": "jest"
+    }
 }
