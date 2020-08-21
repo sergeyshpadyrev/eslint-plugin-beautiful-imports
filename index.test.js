@@ -11,11 +11,9 @@ const errors = {
     unexpectedSyntaxOrder: { messageId: 'unexpectedSyntaxOrder' }
 }
 
-// TODO add tests for * as name
 // TODO add tests for a as name
 // TODO add tests for {a as name}
 // TODO add tests for {b, a as name}
-// TODO add tests for a as C before b as D
 
 ruleTester.run('sort-imports', sortImports, {
     valid: [
@@ -58,6 +56,22 @@ ruleTester.run('sort-imports', sortImports, {
             code: `
                 import 'a'
                 import * as b from 'b'
+            `
+        },
+        {
+            code: `
+                import * as a from 'a'
+                import * as b from 'b'
+            `
+        },
+        {
+            code: `
+                import { a as b, c } from 'a'
+            `
+        },
+        {
+            code: `
+                import { a as c, b } from 'a'
             `
         }
     ],
@@ -112,6 +126,31 @@ ruleTester.run('sort-imports', sortImports, {
                 import 'a'
             `,
             errors: [errors.unexpectedSyntaxOrder]
+        },
+        {
+            code: `
+                import * as b from 'b'
+                import * as a from 'a'
+            `,
+            errors: [errors.sortImportsAlphabetically]
+        },
+        {
+            code: `
+                import { c, a as b } from 'a'
+            `,
+            output: `
+                import { a as b, c } from 'a'
+            `,
+            errors: [errors.sortMembersAlphabetically]
+        },
+        {
+            code: `
+                import { b, a as c } from 'a'
+            `,
+            output: `
+                import { a as c, b } from 'a'
+            `,
+            errors: [errors.sortMembersAlphabetically]
         }
     ]
 })

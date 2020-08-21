@@ -108,7 +108,11 @@ module.exports = {
                         const importSpecifiers = node.specifiers.filter(
                             specifier => specifier.type === 'ImportSpecifier'
                         )
-                        const getSortableName = specifier => specifier.local.name.toLowerCase()
+                        const getSortableName = specifier =>
+                            !!specifier.imported
+                                ? specifier.imported.name.toLowerCase()
+                                : specifier.local.name.toLowerCase()
+
                         const firstUnsortedIndex = importSpecifiers
                             .map(getSortableName)
                             .findIndex((name, index, array) => array[index - 1] > name)
