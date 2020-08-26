@@ -1,0 +1,5 @@
+.gitignore
+.prettierrc
+index.test.js
+readme.md
+yarn.lock
