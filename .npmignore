@@ -2,5 +2,6 @@
 .gitignore
 .prettierrc
 index.test.js
+license
 readme.md
 yarn.lock
