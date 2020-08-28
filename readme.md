@@ -11,13 +11,12 @@ It makes your imports look like this:
 ```js
 import 'alice'
 import 'bob'
-import _ as Ant from 'ant'
-import _ as Bear from 'bear'
+import * as Ant from 'ant'
+import * as Bear from 'bear'
 import Adam from 'adam'
 import { B as A, C } from 'letters'
 import David from 'david'
 import { E, F as H } from 'other-letters'
-
 ```
 
 ## Installation
