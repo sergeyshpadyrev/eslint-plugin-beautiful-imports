@@ -19,6 +19,8 @@ import David from 'david'
 import { E, F as H } from 'other-letters'
 ```
 
+**If this project has helped you out, please support us with a star** 🌟
+
 ## Installation
 
 You need [ESLint](https://www.github.com/eslint/eslint) to be installed for this plugin to work
