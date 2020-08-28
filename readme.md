@@ -31,18 +31,14 @@ npm install --save eslint-plugin-beautiful-imports
 or
 
 ```
-
 yard add eslint-plugin-beautiful-imports
-
 ```
 
 Add "beautiful-imports" to the plugins section
 
 ```
 
-{
-"plugins": ["beautiful-imports"]
-}
+{"plugins": ["beautiful-imports"]}
 
 ```
 
@@ -54,7 +50,3 @@ This plugin has the following parameters:
 
 -   <b>allowSeparatedGroups</b> (default: <i>false</i>) - When true the rule checks the sorting of import declaration statements only for those that appear on consecutive lines.
     In other words, a blank line or a comment line or line with any other statement after an import declaration statement will reset the sorting of import declaration statements.
-
-```
-
-```
