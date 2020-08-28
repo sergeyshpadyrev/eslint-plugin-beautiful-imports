@@ -4,19 +4,20 @@
 [![License: MIT](https://img.shields.io/npm/l/eslint-plugin-beautiful-imports)](https://opensource.org/licenses/MIT)
 ![test](https://github.com/sergeyshpadyrev/eslint-plugin-beautiful-imports/workflows/test/badge.svg?branch=master)
 
-This plugin sorts imports strictly in alphabetical order by first letter of import statement. It works similarily to [sort-imports](https://eslint.org/docs/rules/sort-imports) but with a few differences.
+This plugin sorts imports strictly in alphabetical order by first letter of import statement. It's based on [sort-imports](https://eslint.org/docs/rules/sort-imports) rule but it has a few differences.
 
 It makes your imports look like this:
 
-```
+```js
 import 'alice'
 import 'bob'
-import * as Ant from 'ant'
-import * as Bear from 'bear'
+import _ as Ant from 'ant'
+import _ as Bear from 'bear'
 import Adam from 'adam'
 import { B as A, C } from 'letters'
 import David from 'david'
 import { E, F as H } from 'other-letters'
+
 ```
 
 ## Installation
@@ -31,15 +32,19 @@ npm install --save eslint-plugin-beautiful-imports
 or
 
 ```
+
 yard add eslint-plugin-beautiful-imports
+
 ```
 
 Add "beautiful-imports" to the plugins section
 
 ```
+
 {
-  "plugins": ["beautiful-imports"]
+"plugins": ["beautiful-imports"]
 }
+
 ```
 
 Add `beautiful-imports/sort-imports` to eslint rules
@@ -48,5 +53,9 @@ Add `beautiful-imports/sort-imports` to eslint rules
 
 This plugin has the following parameters:
 
--   <b>allowSeparatedGroups</b> (default: false) - When true the rule checks the sorting of import declaration statements only for those that appear on consecutive lines.
+-   <b>allowSeparatedGroups</b> (default: <i>false</i>) - When true the rule checks the sorting of import declaration statements only for those that appear on consecutive lines.
     In other words, a blank line or a comment line or line with any other statement after an import declaration statement will reset the sorting of import declaration statements.
+
+```
+
+```
