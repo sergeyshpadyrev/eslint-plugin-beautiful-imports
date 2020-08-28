@@ -1,3 +1,6 @@
+const getSortableName = specifier => specifier[!!specifier.imported ? 'imported' : 'local'].name.toLowerCase()
+const getFirstSortableName = node => (node.specifiers.length > 0 ? getSortableName(node.specifiers[0]) : null)
+
 module.exports = {
     rules: {
         'sort-imports': {
@@ -29,77 +32,57 @@ module.exports = {
                 }
             },
 
-            create(context) {
-                const configuration = context.options[0] || {},
-                    allowSeparatedGroups = configuration.allowSeparatedGroups || false,
-                    sourceCode = context.getSourceCode()
+            create: context => {
+                const configuration = context.options[0] || {}
+                const sourceCode = context.getSourceCode()
+                const allowSeparatedGroups = configuration.allowSeparatedGroups || false
+
+                const getImportGroupIndex = node =>
+                    node.specifiers.length === 0 ? 0 : node.specifiers[0].type === 'ImportNamespaceSpecifier' ? 1 : 2
+
                 let previousDeclaration = null
 
-                function getMemberParameterGroupIndex(node) {
-                    if (node.specifiers.length === 0) return 0
-                    if (node.specifiers[0].type === 'ImportNamespaceSpecifier') return 1
-                    return 2
-                }
-
-                function getFirstLocalMemberName(node) {
-                    const specifier = node.specifiers[0]
-                    if (!specifier) return null
-                    if (!!specifier.imported) return specifier.imported.name
-                    return specifier.local.name
-                }
-
-                function getNumberOfLinesBetween(left, right) {
-                    return Math.max(right.loc.start.line - left.loc.end.line - 1, 0)
-                }
-
                 return {
-                    ImportDeclaration(node) {
+                    ImportDeclaration: node => {
                         if (
-                            previousDeclaration &&
                             allowSeparatedGroups &&
-                            getNumberOfLinesBetween(previousDeclaration, node) > 0
-                        ) {
+                            previousDeclaration &&
+                            Math.max(node.loc.start.line - previousDeclaration.loc.end.line - 1, 0) > 0
+                        )
                             previousDeclaration = null
-                        }
 
                         if (previousDeclaration) {
-                            const currentMemberSyntaxGroupIndex = getMemberParameterGroupIndex(node),
-                                previousMemberSyntaxGroupIndex = getMemberParameterGroupIndex(previousDeclaration)
-                            let currentLocalMemberName = getFirstLocalMemberName(node),
-                                previousLocalMemberName = getFirstLocalMemberName(previousDeclaration)
-
-                            previousLocalMemberName = previousLocalMemberName && previousLocalMemberName.toLowerCase()
-                            currentLocalMemberName = currentLocalMemberName && currentLocalMemberName.toLowerCase()
+                            const currentMemberSyntaxGroupIndex = getImportGroupIndex(node)
+                            const previousMemberSyntaxGroupIndex = getImportGroupIndex(previousDeclaration)
+                            const currentLocalMemberName = getFirstSortableName(node)
+                            const previousLocalMemberName = getFirstSortableName(previousDeclaration)
 
                             if (currentMemberSyntaxGroupIndex !== previousMemberSyntaxGroupIndex) {
-                                if (currentMemberSyntaxGroupIndex < previousMemberSyntaxGroupIndex) {
+                                if (currentMemberSyntaxGroupIndex < previousMemberSyntaxGroupIndex)
                                     context.report({
                                         node,
                                         messageId: 'unexpectedSyntaxOrder'
                                     })
-                                }
                             } else {
                                 if (
                                     previousLocalMemberName &&
                                     currentLocalMemberName &&
                                     currentLocalMemberName < previousLocalMemberName
-                                ) {
+                                )
                                     context.report({
                                         node,
                                         messageId: 'sortImportsAlphabetically'
                                     })
-                                }
 
                                 if (
                                     node.specifiers.length === 0 &&
                                     previousDeclaration.specifiers.length === 0 &&
                                     node.source.value.toLowerCase() < previousDeclaration.source.value.toLowerCase()
-                                ) {
+                                )
                                     context.report({
                                         node,
                                         messageId: 'sortImportsAlphabetically'
                                     })
-                                }
                             }
                         }
 
@@ -108,33 +91,25 @@ module.exports = {
                         const importSpecifiers = node.specifiers.filter(
                             specifier => specifier.type === 'ImportSpecifier'
                         )
-                        const getSortableName = specifier =>
-                            !!specifier.imported
-                                ? specifier.imported.name.toLowerCase()
-                                : specifier.local.name.toLowerCase()
 
                         const firstUnsortedIndex = importSpecifiers
                             .map(getSortableName)
                             .findIndex((name, index, array) => array[index - 1] > name)
 
-                        if (firstUnsortedIndex !== -1) {
+                        if (firstUnsortedIndex !== -1)
                             context.report({
                                 node: importSpecifiers[firstUnsortedIndex],
                                 messageId: 'sortMembersAlphabetically',
-                                data: {
-                                    memberName: importSpecifiers[firstUnsortedIndex].local.name
-                                },
-                                fix(fixer) {
+                                data: { memberName: importSpecifiers[firstUnsortedIndex].local.name },
+                                fix: fixer => {
                                     if (
                                         importSpecifiers.some(
                                             specifier =>
                                                 sourceCode.getCommentsBefore(specifier).length ||
                                                 sourceCode.getCommentsAfter(specifier).length
                                         )
-                                    ) {
-                                        // If there are comments in the ImportSpecifier list, don't rearrange the specifiers.
+                                    )
                                         return null
-                                    }
 
                                     return fixer.replaceTextRange(
                                         [
@@ -142,19 +117,10 @@ module.exports = {
                                             importSpecifiers[importSpecifiers.length - 1].range[1]
                                         ],
                                         importSpecifiers
-
-                                            // Clone the importSpecifiers array to avoid mutating it
                                             .slice()
-
-                                            // Sort the array into the desired order
-                                            .sort((specifierA, specifierB) => {
-                                                const aName = getSortableName(specifierA)
-                                                const bName = getSortableName(specifierB)
-
-                                                return aName > bName ? 1 : -1
-                                            })
-
-                                            // Build a string out of the sorted list of import specifiers and the text between the originals
+                                            .sort((specifierA, specifierB) =>
+                                                getSortableName(specifierA) > getSortableName(specifierB) ? 1 : -1
+                                            )
                                             .reduce((sourceText, specifier, index) => {
                                                 const textAfterSpecifier =
                                                     index === importSpecifiers.length - 1
@@ -171,7 +137,6 @@ module.exports = {
                                     )
                                 }
                             })
-                        }
                     }
                 }
             }
