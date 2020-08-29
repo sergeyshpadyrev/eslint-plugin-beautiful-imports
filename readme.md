@@ -33,7 +33,7 @@ npm install --save eslint-plugin-beautiful-imports
 or
 
 ```
-yard add eslint-plugin-beautiful-imports
+yarn add eslint-plugin-beautiful-imports
 ```
 
 Add "beautiful-imports" to the plugins section
